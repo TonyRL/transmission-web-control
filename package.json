@@ -10,7 +10,7 @@
   "scripts": {
     "build": "vite build",
     "format": "oxfmt",
-    "lint": "oxlint ./src/",
+    "lint": "oxlint ./src/ ./e2e/",
     "prebuild": "rimraf ./dist/",
     "prepare": "prek install",
     "preview": "vite preview",
@@ -43,6 +43,7 @@
     "oxfmt": "^0.80.0",
     "oxlint": "^1.95.0",
     "oxlint-tsgolint": "^7.0.2008",
+    "playwright": "^1.65.1",
     "rimraf": "^6.1.4",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",

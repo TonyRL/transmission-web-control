@@ -5,6 +5,13 @@ export function getQueryString(s: string): string | null {
   return u.get(s);
 }
 
+export function formatRatio(value: number): string {
+  if (value === -2) {
+    return '∞';
+  }
+  return (value === -1 ? 0 : value).toFixed(2);
+}
+
 export function getHostName(url: string): string {
   let result = url;
   const regex = /^\w+:\/\/([^\/]*).*/;

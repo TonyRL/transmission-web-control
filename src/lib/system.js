@@ -7,7 +7,7 @@ import { timedChunk } from './public.ts';
 import { SystemBase, templateFiles } from './system-base';
 import torrentFields from './torrent-fields.ts';
 import { transmission } from './transmission';
-import { arrayObjectSort, formatSize } from './utils';
+import { arrayObjectSort, formatRatio, formatSize } from './utils';
 import { APP_VERSION } from './version';
 
 // Current system global object
@@ -2960,6 +2960,9 @@ export class System extends SystemBase {
         case 'status':
           value = system.lang.torrent['status-text'][value];
           break;
+        case 'uploadRatio':
+          value = formatRatio(value);
+          break;
         // error
         case 'error':
           if (value.toString() === '0') {
@@ -3304,10 +3307,10 @@ export class System extends SystemBase {
       case 'ratio':
         field.formatter = function (value, row, index) {
           let className = '';
-          if (parseFloat(value) < 1 && value != -1) {
+          if (parseFloat(value) < 1 && value >= 0) {
             className = 'text-status-warning';
           }
-          return '<span class="' + className + '">' + (value == -1 ? '∞' : value) + '</span>';
+          return '<span class="' + className + '">' + formatRatio(value) + '</span>';
         };
         break;
 
