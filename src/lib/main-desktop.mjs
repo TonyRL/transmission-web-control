@@ -1,5 +1,4 @@
 import '../style/iconfont/iconfont.css';
-
 import ClipboardJS from 'clipboard';
 import * as lo from 'lodash-es';
 import { UAParser } from 'ua-parser-js';

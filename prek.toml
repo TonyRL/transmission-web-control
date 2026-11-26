@@ -1,0 +1,7 @@
+[[repos]]
+repo = "local"
+hooks = [
+  { id = "oxlint", name = "oxlint", language = "system", entry = "pnpm exec oxlint --fix", files = '^src/.*\.(mjs|js|ts)$' },
+  { id = "oxfmt", name = "oxfmt", language = "system", entry = "pnpm exec oxfmt --no-error-on-unmatched-pattern", files = '\.(js|mjs|mts|html|css|ts|md|json|yml|yaml)$' },
+  { id = "tsc", name = "tsc", language = "system", entry = "pnpm run tsc", pass_filenames = false },
+]

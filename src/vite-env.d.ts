@@ -1,5 +1,4 @@
 import 'vite/client';
-
 import type Semver from 'semver';
 
 import { type Transmission } from './lib/transmission';

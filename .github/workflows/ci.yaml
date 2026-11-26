@@ -8,19 +8,18 @@ on:
   push:
     branches:
       - 'master'
-      - '!renovate/**'
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-js-env
 
-      - run: npx prettier --check ./
+      - run: pnpm exec oxfmt --check
 
-      - run: npx tsc
+      - run: pnpm tsc
 
       - run: pnpm run test --coverage
 
@@ -31,12 +30,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-js-env
 
-      - run: npx prettier --check ./
+      - run: pnpm exec oxfmt --check
 
-      - run: npx tsc
+      - run: pnpm tsc
 
       - run: pnpm lint
 
@@ -44,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-js-env
 
       - run: pnpm build
@@ -52,12 +51,12 @@ jobs:
       - run: zip -r dist.zip ./dist/
       - run: tar -czvf dist.tar.gz ./dist/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: build-tar
           path: dist.tar.gz
+          archive: false
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: build-zip
           path: dist.zip
+          archive: false

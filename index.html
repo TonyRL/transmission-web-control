@@ -95,7 +95,12 @@
               <a
                 id="toolbar_about"
                 href="javascript:void(0);"
-                onclick="javascript:system.openDialogFromTemplate({id: 'dialog-about',options: {title: system.lang.toolbar['about'],width: 420,height: 370}});"
+                onclick="
+                  javascript: system.openDialogFromTemplate({
+                    id: 'dialog-about',
+                    options: { title: system.lang.toolbar['about'], width: 420, height: 370 },
+                  });
+                "
                 class="easyui-linkbutton"
                 data-options="iconCls:'icon-about',plain:true"
                 system-tip-lang="toolbar.about"
@@ -320,7 +325,7 @@
       <div
         id="menu-queue-move-top"
         data-options="iconCls:'iconfont tr-icon-top'"
-        onclick="system.changeSelectedTorrentStatus('',null,'queue-move-top');"
+        onclick="system.changeSelectedTorrentStatus('', null, 'queue-move-top')"
         system-tip-lang="menus.queue['move-top']"
       >
         <span system-lang="menus.queue['move-top']"></span>
@@ -328,7 +333,7 @@
       <div
         id="menu-queue-move-up"
         data-options="iconCls:'iconfont tr-icon-up'"
-        onclick="system.changeSelectedTorrentStatus('',null,'queue-move-up');"
+        onclick="system.changeSelectedTorrentStatus('', null, 'queue-move-up')"
         system-tip-lang="menus.queue['move-up']"
       >
         <span system-lang="menus.queue['move-up']"></span>
@@ -336,7 +341,7 @@
       <div
         id="menu-queue-move-down"
         data-options="iconCls:'iconfont tr-icon-down'"
-        onclick="system.changeSelectedTorrentStatus('',null,'queue-move-down');"
+        onclick="system.changeSelectedTorrentStatus('', null, 'queue-move-down')"
         system-tip-lang="menus.queue['move-down']"
       >
         <span system-lang="menus.queue['move-down']"></span>
@@ -344,7 +349,7 @@
       <div
         id="menu-queue-move-bottom"
         data-options="iconCls:'iconfont tr-icon-bottom'"
-        onclick="system.changeSelectedTorrentStatus('',null,'queue-move-bottom');"
+        onclick="system.changeSelectedTorrentStatus('', null, 'queue-move-bottom')"
         system-tip-lang="menus.queue['move-bottom']"
       >
         <span system-lang="menus.queue['move-bottom']"></span>
@@ -356,7 +361,7 @@
         id="menu-plugin-tracker-replace"
         data-options="iconCls:'iconfont tr-icon-replace'"
         system-tip-lang="toolbar.tip['tracker-replace']"
-        onclick="system.execPlugin('replace-tracker');"
+        onclick="system.execPlugin('replace-tracker')"
       >
         <span system-lang="toolbar['tracker-replace']"></span>
       </div>
@@ -364,7 +369,7 @@
         id="menu-plugin-auto-match-data-folder"
         data-options="iconCls:'iconfont tr-icon-auto-match'"
         system-tip-lang="menus.plugin['auto-match-data-folder']"
-        onclick="system.execPlugin('auto-match-data-folder');"
+        onclick="system.execPlugin('auto-match-data-folder')"
       >
         <span system-lang="menus.plugin['auto-match-data-folder']"></span>
       </div>

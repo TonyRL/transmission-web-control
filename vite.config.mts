@@ -1,11 +1,12 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
-import { version } from './package.json';
-
-const TRANSMISSION_RPC = process.env.TRANSMISSION_RPC || 'http://192.168.1.3:9091/transmission/rpc';
+import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, import.meta.dirname, '');
+  const TRANSMISSION_RPC = env.TRANSMISSION_RPC || 'http://192.168.1.3:9091/transmission/rpc';
+
   return {
     base: './',
     build: {
@@ -27,7 +28,7 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     define: {
-      'import.meta.env.__APP_VERSION__': JSON.stringify(version),
+      'import.meta.env.__APP_VERSION__': JSON.stringify(pkg.version),
     },
   };
 });
