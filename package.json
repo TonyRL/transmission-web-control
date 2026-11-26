@@ -39,6 +39,7 @@
     "@vitest/coverage-v8": "^5.1.2",
     "@vitest/ui": "^5.1.2",
     "eslint-plugin-n": "^18.6.0",
+    "monocart-coverage-reports": "^3.3.0",
     "node-stdlib-browser": "^1.2.0",
     "oxfmt": "^0.80.0",
     "oxlint": "^1.95.0",

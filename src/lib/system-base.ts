@@ -92,6 +92,7 @@ export class SystemBase {
   lang = enLocal;
   langInit = false;
   reloading = false;
+  reloadPending = false;
   autoReloadTimer = null;
   downloadDir = '';
   // The currently selected torrent number

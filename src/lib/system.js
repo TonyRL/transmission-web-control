@@ -1699,6 +1699,11 @@ export class System extends SystemBase {
       trackers: transmission.trackers,
       folders: transmission.torrents.folders,
     };
+    const onLoaded = () => {
+      this.resetTorrentInfos(oldInfos);
+      this.finishReload();
+    };
+    const onError = () => this.finishReload();
 
     // Gets all the torrent id information
     transmission.torrents.getAllIDs(
@@ -1713,15 +1718,14 @@ export class System extends SystemBase {
         const errorIds = transmission.torrents.getErrorIds(ignore, true);
 
         if (errorIds.length > 0) {
-          transmission.torrents.getAllIDs(function () {
-            system.resetTorrentInfos(oldInfos);
-          }, errorIds);
+          transmission.torrents.getAllIDs(onLoaded, errorIds, undefined, onError);
         } else {
-          system.resetTorrentInfos(oldInfos);
+          onLoaded();
         }
       },
       ids,
       moreFields,
+      onError,
     );
   }
 
@@ -1877,14 +1881,6 @@ export class System extends SystemBase {
 
     if (currentTorrentId != 0) {
       system.control.torrentlist.datagrid('selectRecord', currentTorrentId);
-    }
-
-    system.reloading = false;
-
-    if (system.config.autoReload) {
-      system.autoReloadTimer = setTimeout(function () {
-        system.reloadData();
-      }, system.config.reloadStep);
     }
 
     // Total count
@@ -2147,22 +2143,25 @@ export class System extends SystemBase {
     clearTimeout(this.autoReloadTimer);
 
     this.reloading = true;
-    transmission.getStatus(function (data) {
-      system.reloading = false;
-      // system.updateTreeNodeText("torrent-all",system.lang.tree.all+" ("+data["torrentCount"]+")");
-      // system.updateTreeNodeText("paused",system.lang.tree.paused+(data["pausedTorrentCount"]==0?"":" ("+data["pausedTorrentCount"]+")"));
-      // system.updateTreeNodeText("sending",system.lang.tree.sending+(data["activeTorrentCount"]==0?"":" ("+data["activeTorrentCount"]+")"));
-      $('#status_downloadspeed').html(formatSize(data.downloadSpeed, false, 'speed'));
-      $('#status_uploadspeed').html(formatSize(data.uploadSpeed, false, 'speed'));
-      system.serverSessionStats = data;
-      if (data.torrentCount === 0) {
-        const serversNode = system.panel.left.tree('find', 'servers');
-        if (serversNode) {
-          system.panel.left.tree('remove', serversNode.target);
+    transmission.getStatus(
+      function (data) {
+        system.reloading = false;
+        // system.updateTreeNodeText("torrent-all",system.lang.tree.all+" ("+data["torrentCount"]+")");
+        // system.updateTreeNodeText("paused",system.lang.tree.paused+(data["pausedTorrentCount"]==0?"":" ("+data["pausedTorrentCount"]+")"));
+        // system.updateTreeNodeText("sending",system.lang.tree.sending+(data["activeTorrentCount"]==0?"":" ("+data["activeTorrentCount"]+")"));
+        $('#status_downloadspeed').html(formatSize(data.downloadSpeed, false, 'speed'));
+        $('#status_uploadspeed').html(formatSize(data.uploadSpeed, false, 'speed'));
+        system.serverSessionStats = data;
+        if (data.torrentCount === 0) {
+          const serversNode = system.panel.left.tree('find', 'servers');
+          if (serversNode) {
+            system.panel.left.tree('remove', serversNode.target);
+          }
+          system.updateTreeNodeText('torrent-all', system.lang.tree.all);
         }
-        system.updateTreeNodeText('torrent-all', system.lang.tree.all);
-      }
-    });
+      },
+      () => this.finishReload(),
+    );
   }
 
   // Displays status information
@@ -3345,19 +3344,32 @@ export class System extends SystemBase {
 
   // Reload the data
   reloadData() {
+    if (this.reloading) {
+      this.reloadPending = true;
+      return;
+    }
+    clearTimeout(this.autoReloadTimer);
     if (this.popoverCount > 0) {
-      setTimeout(function () {
+      this.autoReloadTimer = setTimeout(function () {
         system.reloadData();
       }, 2000);
       return;
     }
     this.reloadSession();
-    this.reloading = false;
     this.getServerStatus();
+  }
+
+  finishReload() {
     this.reloading = false;
-    this.reloadTorrentBaseInfos();
-    // enable all icons
-    // this.checkTorrentRow("all", false);
+    clearTimeout(this.autoReloadTimer);
+    if (this.reloadPending) {
+      this.reloadPending = false;
+      this.reloadData();
+    } else if (this.config.autoReload) {
+      this.autoReloadTimer = setTimeout(() => {
+        this.reloadData();
+      }, this.config.reloadStep);
+    }
   }
 
   // Loads the directory listing

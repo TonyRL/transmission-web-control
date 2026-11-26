@@ -1,0 +1,11 @@
+overrides:
+  assert: npm:@nolyfill/assert@^1
+  is-arguments: npm:@nolyfill/is-arguments@^1
+  is-core-module: npm:@nolyfill/is-core-module@^1
+  is-generator-function: npm:@nolyfill/is-generator-function@^1
+  is-typed-array: npm:@nolyfill/is-typed-array@^1
+  isarray: npm:@nolyfill/isarray@^1
+  safe-buffer: npm:@nolyfill/safe-buffer@^1
+  side-channel: npm:@nolyfill/side-channel@^1
+  typed-array-buffer: npm:@nolyfill/typed-array-buffer@^1
+  which-typed-array: npm:@nolyfill/which-typed-array@^1

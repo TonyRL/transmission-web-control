@@ -1,6 +1,7 @@
+import MCR from 'monocart-coverage-reports';
 import { type Browser, chromium, type Page } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
-import { afterAll, beforeAll, expect, test } from 'vitest';
+import { afterAll, beforeAll } from 'vitest';
 
 const torrent = (
   id: number,
@@ -41,7 +42,7 @@ const torrent = (
   downloadedEver,
 });
 
-const torrents = [
+export const torrents = [
   torrent(1, 1.23456, 123456, 100000),
   torrent(2, 0.5, 50, 100),
   // TR_RATIO_INF
@@ -78,15 +79,23 @@ const rpcResults: Record<string, unknown> = {
   'torrent-get': { torrents, removed: [] },
 };
 
+export const rpc = {
+  requests: [] as Array<{ method: string; idle: number }>,
+  failStatus: false,
+  hold: {} as Record<string, Promise<void> | undefined>,
+};
+let lastAnswer = 0;
+
 let server: ViteDevServer;
 let browser: Browser;
-let page: Page;
+export let page: Page;
 
 beforeAll(async () => {
   server = await createServer({ server: { port: 0 }, logLevel: 'error' });
   await server.listen();
   browser = await chromium.launch();
   page = await browser.newPage();
+  await page.coverage.startJSCoverage();
 
   await page.route(/^https?:\/\/(?!localhost|127\.0\.0\.1)/, async (route) => {
     await route.abort();
@@ -99,10 +108,24 @@ beforeAll(async () => {
     }
 
     const { method, arguments: args } = JSON.parse(request.postData() ?? '{}');
-    const result =
-      method === 'torrent-get' && typeof args.ids === 'number'
-        ? { torrents: torrents.filter(({ id }) => id === args.ids) }
-        : rpcResults[method];
+    const isDetails = method === 'torrent-get' && typeof args.ids === 'number';
+    const isCycle = method === 'session-stats' || (method === 'torrent-get' && !isDetails);
+    if (isCycle) {
+      rpc.requests.push({ method, idle: performance.now() - lastAnswer });
+      const hold = rpc.hold[method];
+      rpc.hold[method] = undefined;
+      await hold;
+      lastAnswer = performance.now();
+    }
+    if (method === 'session-stats' && rpc.failStatus) {
+      rpc.failStatus = false;
+      await route.abort();
+      return;
+    }
+
+    const result = isDetails
+      ? { torrents: torrents.filter(({ id }) => id === args.ids) }
+      : rpcResults[method];
     await route.fulfill({ json: { result: 'success', arguments: result ?? {} } });
   });
 
@@ -110,37 +133,18 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  const coverage = await page?.coverage.stopJSCoverage();
+  if (coverage) {
+    const report = MCR({
+      outputDir: 'coverage/e2e',
+      reports: ['cobertura'],
+      entryFilter: ({ url }) => url.includes('/src/lib/'),
+      sourcePath: (filePath, { distFile }) =>
+        distFile ? distFile.slice(distFile.indexOf('/') + 1) : filePath,
+    });
+    await report.add(coverage);
+    await report.generate();
+  }
   await browser?.close();
   await server?.close();
-});
-
-test('torrent list shows the upload ratio with two decimals', async () => {
-  // Click All torrents
-  await page.locator('.tree-node.tree-root-first').click();
-
-  const cells = page.locator('.datagrid-body td[field="uploadRatio"] span');
-  await expect.poll(async () => await cells.count()).toBe(torrents.length);
-
-  const rendered = await cells.evaluateAll((spans) =>
-    spans.map((span) => [span.textContent, span.className]),
-  );
-
-  expect(rendered).toEqual(
-    expect.arrayContaining([
-      ['1.23', ''],
-      ['0.50', 'text-status-warning'],
-      ['∞', ''],
-      ['0.00', ''],
-    ]),
-  );
-});
-
-test('torrent details show the upload ratio with two decimals', async () => {
-  await page.locator('.datagrid-body td[field="name"]', { hasText: 'torrent-1' }).click();
-  // Expand details panel
-  await page.locator('#layout_body > .layout-expand-south .layout-button-up').click();
-
-  await expect
-    .poll(async () => await page.locator('#torrent-attribute-value-uploadRatio').textContent())
-    .toBe('1.23');
 });

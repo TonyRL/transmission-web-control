@@ -91,13 +91,20 @@ export const transmission = {
     throw new Error('failed to complete request');
   },
 
-  exec(config: { method: string; arguments?: any }, callback: (data: any, tags?: any) => void) {
-    this.execAsync(config).then(callback, (err) => {
-      console.error('failed to connect transmission', err);
-    });
+  exec(
+    config: { method: string; arguments?: any },
+    callback: (data: any, tags?: any) => void,
+    onError?: (err: unknown) => void,
+  ) {
+    this.execAsync(config)
+      .then(callback)
+      .catch((err) => {
+        console.error('transmission request failed', err);
+        onError?.(err);
+      });
   },
 
-  getStatus(callback: (data: unknown) => void) {
+  getStatus(callback: (data: unknown) => void, onError?: (err: unknown) => void) {
     this.exec(
       {
         method: 'session-stats',
@@ -121,8 +128,13 @@ export const transmission = {
             transmission.torrents.pausedTorrentCount = data.arguments.pausedTorrentCount;
             transmission._onTorrentCountChange();
           }
+        } else {
+          const error = new Error(`failed to get transmission status: ${data.result}`);
+          console.error(error);
+          onError?.(error);
         }
       },
+      onError,
     );
   },
   getSession(callback?: (data: unknown) => void) {
@@ -695,6 +707,7 @@ export const transmission = {
       callback: null | ((data: Torrent[] | null) => void),
       ids: string[] | undefined,
       moreFields?: Array<keyof Torrent>,
+      onError?: (err: unknown) => void,
     ) {
       let tmp = this.fields.base;
       if (this.loadSimpleInfo && this.all) {
@@ -740,6 +753,7 @@ export const transmission = {
             }
           }
         },
+        onError,
       );
     },
     // Whether the torrents are being changed

@@ -1,9 +1,10 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     watch: false,
     environment: 'node',
+    exclude: [...configDefaults.exclude, 'e2e/setup.test.ts'],
     testTimeout: 30_000,
     hookTimeout: 30_000,
     expect: { poll: { timeout: 10_000 } },
@@ -12,7 +13,7 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      reporter: ['lcov', 'text-summary'],
+      reporter: ['cobertura', 'text-summary'],
     },
   },
 });
