@@ -1033,7 +1033,9 @@ export class System extends SystemBase {
     button.find('span').first().attr({
       title: system.lang.dialog['torrent-setLabels'].title,
     });
-    return box.get(0).outerHTML;
+    const html = box.get(0).outerHTML;
+    box.remove();
+    return html;
   }
 
   /**
