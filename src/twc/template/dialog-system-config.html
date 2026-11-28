@@ -34,6 +34,7 @@
                 id="incomplete-dir"
                 value=""
                 type="text"
+                class="easyui-textbox"
                 enabledof="incomplete-dir-enabled"
                 style="width: 100%"
               />
@@ -97,6 +98,7 @@
                 id="script-torrent-done-filename"
                 value=""
                 type="text"
+                class="easyui-textbox"
                 enabledof="script-torrent-done-enabled"
                 style="width: 100%"
               />
@@ -118,6 +120,7 @@
                 id="config-dir"
                 value=""
                 type="text"
+                class="easyui-textbox"
                 readonly="readonly"
                 disabled="disabled"
                 style="width: 100%"
@@ -274,7 +277,13 @@
           </tr>
           <tr>
             <td colspan="2">
-              <input id="blocklist-url" type="text" enabledof="blocklist-enabled" />
+              <input
+                id="blocklist-url"
+                type="text"
+                class="easyui-textbox"
+                enabledof="blocklist-enabled"
+                style="width: 100%"
+              />
             </td>
           </tr>
           <tr>
@@ -543,6 +552,8 @@
             <td width="100%" height="100%">
               <textarea
                 id="local-storage-dictionary-folders"
+                class="easyui-textbox"
+                data-options="multiline:true"
                 style="width: 100%; height: 100%"
               ></textarea>
             </td>
@@ -912,6 +923,7 @@
             .click(function () {
               thisDialog.find("*[enabledof='" + this.id + "']").prop('disabled', !this.checked);
               if (this.checked) {
+                thisDialog.find(".easyui-textbox[enabledof='" + this.id + "']").textbox('enable');
                 thisDialog
                   .find(".easyui-numberspinner[enabledof='" + this.id + "']")
                   .numberspinner('enable');
@@ -922,6 +934,7 @@
                   .find(".easyui-linkbutton[enabledof='" + this.id + "']")
                   .linkbutton('enable');
               } else {
+                thisDialog.find(".easyui-textbox[enabledof='" + this.id + "']").textbox('disable');
                 thisDialog
                   .find(".easyui-numberspinner[enabledof='" + this.id + "']")
                   .numberspinner('disable');
@@ -953,11 +966,13 @@
         }
         thisDialog.find('#download-dir').combobox();
 
-        thisDialog.find('#config-dir').val(system.serverConfig['config-dir']);
-        thisDialog.find('#incomplete-dir').val(system.serverConfig['incomplete-dir']);
-        thisDialog
-          .find('#incomplete-dir')
-          .prop('disabled', !system.serverConfig['incomplete-dir-enabled']);
+        thisDialog.find('#config-dir').textbox({
+          value: system.serverConfig['config-dir'],
+        });
+        thisDialog.find('#incomplete-dir').textbox({
+          value: system.serverConfig['incomplete-dir'],
+          disabled: !system.serverConfig['incomplete-dir-enabled'],
+        });
         thisDialog.find('#cache-size-mb').val(system.serverConfig['cache-size-mb']);
         thisDialog
           .find('#download-queue-size')
@@ -1012,10 +1027,10 @@
           .find('#peer-limit-per-torrent')
           .val(system.serverConfig['peer-limit-per-torrent']);
 
-        thisDialog
-          .find('#blocklist-url')
-          .val(system.serverConfig['blocklist-url'])
-          .prop('disabled', !system.serverConfig['blocklist-enabled']);
+        thisDialog.find('#blocklist-url').textbox({
+          value: system.serverConfig['blocklist-url'],
+          disabled: !system.serverConfig['blocklist-enabled'],
+        });
         thisDialog
           .find('#system-conifg-button-update-blocklist')
           .prop('disabled', !system.serverConfig['blocklist-enabled']);
@@ -1033,10 +1048,10 @@
           .val(system.serverConfig['idle-seeding-limit'])
           .prop('disabled', !system.serverConfig['idle-seeding-limit-enabled']);
 
-        thisDialog
-          .find('#script-torrent-done-filename')
-          .val(system.serverConfig['script-torrent-done-filename'])
-          .prop('disabled', !system.serverConfig['script-torrent-done-enabled']);
+        thisDialog.find('#script-torrent-done-filename').textbox({
+          value: system.serverConfig['script-torrent-done-filename'],
+          disabled: !system.serverConfig['script-torrent-done-enabled'],
+        });
 
         var etype = system.lang.dialog['system-config']['encryption-type'];
         for (var key in etype) {
@@ -1056,11 +1071,9 @@
         thisDialog.find('#download-dir-free-space').text(tmp);
 
         // Local dictionary folder list (not including transmission.downloadDirs)
-        if (system.dictionary.folders == null || system.dictionary.folders == '') {
-          thisDialog.find('#local-storage-dictionary-folders').val('');
-        } else {
-          thisDialog.find('#local-storage-dictionary-folders').val(system.dictionary.folders);
-        }
+        thisDialog.find('#local-storage-dictionary-folders').textbox({
+          value: system.dictionary.folders == null ? '' : system.dictionary.folders,
+        });
 
         //thisDialog.find("#local-storage-dictionary-folders").val(transmission.downloadDirs);
 
@@ -1160,7 +1173,7 @@
 
         // 保存参数
         thisDialog.find('#system-config-button-save').click(function () {
-          var inputs = thisDialog.find('input');
+          var inputs = thisDialog.find('input:not(.textbox-text)');
           var config = {};
           var days = new Array();
           var value = null;
@@ -1305,7 +1318,7 @@
           } else {
             if (
               system.dictionary.folders ==
-              thisDialog.find('#local-storage-dictionary-folders').val()
+              thisDialog.find('#local-storage-dictionary-folders').textbox('getValue')
             ) {
               thisDialog.find('#system-config-nochange').fadeInAndOut();
               return;
@@ -1319,14 +1332,14 @@
             if (
               thisDialog
                 .find('#local-storage-dictionary-folders')
-                .val()
+                .textbox('getValue')
                 .replace(/^\s*[\r\n]/gm, '').length == 0
             ) {
               system.dictionary.folders = '';
             } else {
               system.dictionary.folders = thisDialog
                 .find('#local-storage-dictionary-folders')
-                .val()
+                .textbox('getValue')
                 .replace(/^\s*[\r\n]/gm, '');
             }
             system.saveConfig();
