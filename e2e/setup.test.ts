@@ -1,7 +1,17 @@
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import MCR from 'monocart-coverage-reports';
 import { type Browser, chromium, type Page } from 'playwright';
-import { createServer, type ViteDevServer } from 'vite';
-import { afterAll, beforeAll } from 'vitest';
+import { build, createServer, preview, type PreviewServer, type ViteDevServer } from 'vite';
+import { afterAll, beforeAll, inject } from 'vitest';
+
+declare module 'vitest' {
+  export interface ProvidedContext {
+    preview: boolean;
+  }
+}
 
 const torrent = (
   id: number,
@@ -86,13 +96,22 @@ export const rpc = {
 };
 let lastAnswer = 0;
 
-let server: ViteDevServer;
+let server: ViteDevServer | PreviewServer;
+let buildDir: string;
 let browser: Browser;
 export let page: Page;
 
 beforeAll(async () => {
-  server = await createServer({ server: { port: 0 }, logLevel: 'error' });
-  await server.listen();
+  if (inject('preview')) {
+    buildDir = await mkdtemp(join(tmpdir(), 'twc-preview-'));
+    const config = { build: { outDir: buildDir }, logLevel: 'error' as const };
+    await build(config);
+    server = await preview({ ...config, preview: { host: '127.0.0.1', port: 0 } });
+  } else {
+    const devServer = await createServer({ server: { port: 0 }, logLevel: 'error' });
+    await devServer.listen();
+    server = devServer;
+  }
   browser = await chromium.launch();
   page = await browser.newPage();
   await page.coverage.startJSCoverage();
@@ -133,7 +152,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const coverage = await page?.coverage.stopJSCoverage();
+  const coverage = inject('preview') ? undefined : await page?.coverage.stopJSCoverage();
   if (coverage) {
     const report = MCR({
       outputDir: 'coverage/e2e',
@@ -147,4 +166,7 @@ afterAll(async () => {
   }
   await browser?.close();
   await server?.close();
+  if (buildDir) {
+    await rm(buildDir, { recursive: true, force: true });
+  }
 });

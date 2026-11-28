@@ -9,14 +9,16 @@ const i18n = import.meta.glob('../i18n/*.json', { eager: true });
 const easyUILocale: Record<`../twc/easyui/locale/easyui-lang-${string}.js`, string> =
   import.meta.glob('../twc/easyui/locale/easyui-lang-*.js', {
     eager: true,
-    as: 'raw',
+    query: '?raw',
+    import: 'default',
   });
 
 export const templateFiles: Record<`../twc/template/${string}.html`, string> = import.meta.glob(
   '../twc/template/*.html',
   {
     eager: true,
-    as: 'raw',
+    query: '?raw',
+    import: 'default',
   },
 );
 

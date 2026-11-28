@@ -11,6 +11,20 @@ export default defineConfig({
     snapshotFormat: {
       printBasicPrototype: true,
     },
+    projects: [
+      {
+        extends: true,
+        test: { name: 'unit', include: ['src/**/*.test.ts'] },
+      },
+      {
+        extends: true,
+        test: { name: 'dev', include: ['e2e/**/*.test.ts'], provide: { preview: false } },
+      },
+      {
+        extends: true,
+        test: { name: 'preview', include: ['e2e/**/*.test.ts'], provide: { preview: true } },
+      },
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['cobertura', 'text-summary'],
