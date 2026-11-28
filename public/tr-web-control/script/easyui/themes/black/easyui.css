@@ -3299,7 +3299,10 @@
 .nav-torrents-number, .nav-total-size {
   color: #c0c0c0 !important;
 }
-input, select, textarea {
+input, select, textarea,
+.searchbox, .searchbox-button {
   background-color: #e5e5e5;
+}
+input, select, textarea {
   color: #666;
 }
