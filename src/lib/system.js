@@ -166,8 +166,14 @@ export class System extends SystemBase {
         .appendTo(system.panel.top.find('#lang'));
     });
 
-    this.panel.top.find('#lang').change(function () {
-      location.href = '?lang=' + this.value;
+    this.panel.top.find('#lang').combobox({
+      editable: false,
+      panelHeight: 'auto',
+      onChange(value) {
+        if (value !== system.lang.name) {
+          location.href = '?lang=' + value;
+        }
+      },
     });
 
     this.panel.toolbar.attr('class', 'panel-header');
