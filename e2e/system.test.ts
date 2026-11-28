@@ -174,3 +174,21 @@ test('refreshing torrent rows does not retain detached label buttons', async () 
   expect(await page.evaluate(detachedLabelButtons)).toBe(before);
   expect(await page.locator('.datagrid-body .user-label-set').count()).toBe(torrents.length);
 });
+
+test('refreshes incrementally and requests the base fields of a new torrent', async () => {
+  await prepare(false);
+  torrents.push({ ...torrents[0], id: 5 });
+  await page.evaluate(() => {
+    (globalThis.system as unknown as TestSystem).reloadData();
+  });
+
+  const base = expect.arrayContaining(['addedDate']);
+  await expect
+    .poll(() =>
+      rpc.requests.filter(({ method }) => method === 'torrent-get').map(({ args }) => args),
+    )
+    .toMatchObject([
+      { ids: 'recently-active', fields: base },
+      { ids: [5], fields: base },
+    ]);
+});

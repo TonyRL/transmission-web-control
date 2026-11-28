@@ -77,7 +77,9 @@ const rpcResults: Record<string, unknown> = {
     'alt-speed-enabled': false,
   },
   'session-stats': {
-    torrentCount: torrents.length,
+    get torrentCount() {
+      return torrents.length;
+    },
     activeTorrentCount: 0,
     pausedTorrentCount: torrents.length,
     downloadSpeed: 0,
@@ -90,7 +92,11 @@ const rpcResults: Record<string, unknown> = {
 };
 
 export const rpc = {
-  requests: [] as Array<{ method: string; idle: number }>,
+  requests: [] as Array<{
+    method: string;
+    idle: number;
+    args: { ids?: string | number[]; fields: string[] };
+  }>,
   failStatus: false,
   hold: {} as Record<string, Promise<void> | undefined>,
 };
@@ -130,7 +136,7 @@ beforeAll(async () => {
     const isDetails = method === 'torrent-get' && typeof args.ids === 'number';
     const isCycle = method === 'session-stats' || (method === 'torrent-get' && !isDetails);
     if (isCycle) {
-      rpc.requests.push({ method, idle: performance.now() - lastAnswer });
+      rpc.requests.push({ method, idle: performance.now() - lastAnswer, args });
       const hold = rpc.hold[method];
       rpc.hold[method] = undefined;
       await hold;

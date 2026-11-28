@@ -115,8 +115,6 @@ export const transmission = {
             callback(data.arguments);
           }
 
-          transmission.event.emit('loaded');
-
           if (
             transmission.torrents.count != data.arguments.torrentCount ||
             transmission.torrents.activeTorrentCount != data.arguments.activeTorrentCount ||
@@ -128,6 +126,8 @@ export const transmission = {
             transmission.torrents.pausedTorrentCount = data.arguments.pausedTorrentCount;
             transmission._onTorrentCountChange();
           }
+
+          transmission.event.emit('loaded');
         } else {
           const error = new Error(`failed to get transmission status: ${data.result}`);
           console.error(error);
@@ -710,7 +710,7 @@ export const transmission = {
       onError?: (err: unknown) => void,
     ) {
       let tmp = this.fields.base;
-      if (this.loadSimpleInfo && this.all) {
+      if (this.loadSimpleInfo && ids === undefined) {
         tmp = this.fields.status;
       }
 
@@ -724,7 +724,7 @@ export const transmission = {
 
       this.isRecentlyActive = false;
       // If it has been acquired
-      if (this.all.length && ids == undefined) {
+      if (Object.keys(this.all).length > 0 && ids === undefined) {
         args.ids = 'recently-active';
         this.isRecentlyActive = true;
       } else if (ids) {
